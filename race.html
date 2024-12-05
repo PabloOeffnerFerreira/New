@@ -1,0 +1,91 @@
+
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Race Selection</title>
+    <link rel="stylesheet" href="style.css">
+</head>
+<body>
+    <div id="race-selection">
+        <h1>Select Your Race</h1>
+        <div class="form-group">
+            <label for="race-dropdown">Choose a Race:</label>
+            <select id="race-dropdown" onchange="updateSubrace()">
+                <option value="None" disabled selected>Select a Race</option>
+                <option value="Human">Human</option>
+                <option value="Elf">Elf</option>
+                <option value="Dwarf">Dwarf</option>
+                <option value="Halfling">Halfling</option>
+                <option value="Orc">Orc</option>
+                <option value="Tiefling">Tiefling</option>
+                <option value="Aasimar">Aasimar</option>
+                <option value="Triton">Triton</option>
+            </select>
+        </div>
+
+        <div class="form-group" id="subrace-container" style="display: none;">
+            <label for="subrace-dropdown">Choose a Subrace:</label>
+            <select id="subrace-dropdown">
+                <!-- Subrace options will be dynamically added -->
+            </select>
+        </div>
+        <button id="confirm-selection" onclick="selectRace()">Confirm Selection</button>
+    </div>
+
+    <script>
+        const subraceOptions = {
+            Elf: ["Wood Elf", "High Elf", "Dark Elf", "Shadar-Kai", "Eladrin Elf"],
+            Dwarf: ["Hill Dwarf", "Mountain Dwarf"],
+            Halfling: ["Lightfoot", "Stout"],
+            Orc: ["Half-Orc", "Full Orc"],
+            Tiefling: ["Infernal", "Abyssal"],
+            Aasimar: ["Fallen", "Protector", "Scourge"],
+            Triton: ["Coral Shore", "Deep Fathom"],
+        };
+
+        function updateSubrace() {
+            const raceDropdown = document.getElementById("race-dropdown");
+            const selectedRace = raceDropdown.value;
+            const subraceContainer = document.getElementById("subrace-container");
+            const subraceDropdown = document.getElementById("subrace-dropdown");
+
+            subraceDropdown.innerHTML = ""; // Clear previous subraces
+
+            if (subraceOptions[selectedRace]) {
+                subraceContainer.style.display = "block";
+                subraceOptions[selectedRace].forEach(subrace => {
+                    const option = document.createElement("option");
+                    option.value = subrace;
+                    option.textContent = subrace;
+                    subraceDropdown.appendChild(option);
+                });
+            } else {
+                subraceContainer.style.display = "none";
+            }
+        }
+
+        function selectRace() {
+            const raceDropdown = document.getElementById("race-dropdown");
+            const subraceDropdown = document.getElementById("subrace-dropdown");
+            const selectedRace = raceDropdown.value;
+            const selectedSubrace = subraceDropdown.value || null;
+
+            if (!selectedRace || (subraceOptions[selectedRace] && !selectedSubrace)) {
+                alert("Please select both a race and a subrace.");
+                return;
+            }
+
+            const character = JSON.parse(localStorage.getItem("character")) || {};
+            character.race = selectedRace;
+            if (selectedSubrace) {
+                character.subrace = selectedSubrace;
+            }
+
+            localStorage.setItem("character", JSON.stringify(character));
+            window.location.href = "game.html";
+        }
+    </script>
+</body>
+</html>

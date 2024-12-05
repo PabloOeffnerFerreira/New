@@ -1,0 +1,66 @@
+
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Web RPG - Character Creation</title>
+    <link rel="stylesheet" href="style.css">
+</head>
+<body>
+    <div id="character-creation">
+        <h1>Character Creation</h1>
+        <div class="form-group">
+            <label for="name">Character Name:</label>
+            <input type="text" id="name" placeholder="Enter your name">
+        </div>
+        <div class="form-group">
+            <label for="class">Class:</label>
+            <select id="class">
+                <option value="Warrior">Warrior</option>
+                <option value="Mage">Mage</option>
+                <option value="Rogue">Rogue</option>
+            </select>
+        </div>
+        <p><strong>Points remaining: <span id="remaining-points">10</span></strong></p>
+        <div class="form-group">
+            <label>Strength:</label>
+            <button onclick="adjustPoints('str', -1)">-</button>
+            <span id="str-points">0</span>
+            <button onclick="adjustPoints('str', 1)">+</button>
+        </div>
+        <div class="form-group">
+            <label>Constitution:</label>
+            <button onclick="adjustPoints('con', -1)">-</button>
+            <span id="con-points">0</span>
+            <button onclick="adjustPoints('con', 1)">+</button>
+        </div>
+        <div class="form-group">
+            <label>Dexterity:</label>
+            <button onclick="adjustPoints('dex', -1)">-</button>
+            <span id="dex-points">0</span>
+            <button onclick="adjustPoints('dex', 1)">+</button>
+        </div>
+        <div class="form-group">
+            <label>Intelligence:</label>
+            <button onclick="adjustPoints('int', -1)">-</button>
+            <span id="int-points">0</span>
+            <button onclick="adjustPoints('int', 1)">+</button>
+        </div>
+        <div class="form-group">
+            <label>Wisdom:</label>
+            <button onclick="adjustPoints('wis', -1)">-</button>
+            <span id="wis-points">0</span>
+            <button onclick="adjustPoints('wis', 1)">+</button>
+        </div>
+        <div class="form-group">
+            <label>Charisma:</label>
+            <button onclick="adjustPoints('cha', -1)">-</button>
+            <span id="cha-points">0</span>
+            <button onclick="adjustPoints('cha', 1)">+</button>
+        </div>
+        <button onclick="createCharacter()">Create Character</button>
+    </div>
+    <script src="script.js"></script>
+</body>
+</html>

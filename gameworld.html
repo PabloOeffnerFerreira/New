@@ -1,0 +1,62 @@
+
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Game World</title>
+    <link rel="stylesheet" href="style.css">
+</head>
+<body>
+    <div id="gameworld-container">
+        <!-- Sidebar for Actions -->
+        <aside id="sidebar">
+            <h2>Actions</h2>
+
+            <!-- Action Selector -->
+            <div class="action-group">
+                <label for="action-select">Choose Action:</label>
+                <select id="action-select" onchange="handleActionChange()">
+                    <option value="attack">Attack</option>
+                    <option value="persuade">Persuade</option>
+                    <option value="investigate">Investigate</option>
+                    <option value="insight">Insight</option>
+                </select>
+            </div>
+
+            <!-- Stealth Status -->
+            <div id="player-status">
+                <p id="stealth-indicator" style="display: none;">You are in Stealth Mode</p>
+            </div>
+
+            <!-- Target Selector -->
+            <div class="action-group" id="target-container" style="display: none;">
+                <label for="target-select">Target:</label>
+                <select id="target-select"></select>
+            </div>
+
+            <!-- Action Buttons -->
+            <button id="stealth-button" onclick="goIntoStealth()">Go into Stealth</button>
+            <button onclick="performAction()">Perform Action</button>
+
+        </aside>
+
+        <!-- Main Gameplay Area -->
+        <main id="gameplay-area">
+            <div id="story-text">
+                <p>You find yourself at a crossroads. A dense forest lies to the north, while a crumbling castle looms to the east. Where will you go?</p>
+            </div>
+
+            <div id="action-results"></div>
+
+            <div id="choices">
+                <button onclick="makeChoice('forest')">Go to the Forest</button>
+                <button onclick="makeChoice('castle')">Go to the Castle</button>
+                <button onclick="makeChoice('village')">Head to the Village</button>
+            </div>
+        </main>
+    </div>
+
+    <script src="gameworld.js"></script>
+</body>
+</html>

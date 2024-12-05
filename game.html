@@ -1,0 +1,46 @@
+
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Game Start</title>
+    <link rel="stylesheet" href="style.css">
+</head>
+<body>
+    <div id="game-container">
+        <h1>Welcome to Your Adventure!</h1>
+        <div id="character-info">
+            <h2>Your Character</h2>
+            <p id="character-name">Name: </p>
+            <p id="character-class">Class: </p>
+            <p id="character-race">Race: </p>
+            <p id="character-subrace">Subrace: </p>
+            <p id="character-stats">Stats: </p>
+        </div>
+
+        <div id="game-actions">
+            <button onclick="startAdventure()">Start Your Adventure</button>
+        </div>
+    </div>
+
+    <script>
+        const character = JSON.parse(localStorage.getItem("character"));
+
+        if (character) {
+            document.getElementById("character-name").innerText = `Name: ${character.name}`;
+            document.getElementById("character-class").innerText = `Class: ${character.class}`;
+            document.getElementById("character-race").innerText = `Race: ${character.race || "Unknown"}`;
+            document.getElementById("character-subrace").innerText = `Subrace: ${character.subrace || "None"}`;
+            document.getElementById("character-stats").innerText = `Stats: Strength: ${character.stats.str}, Constitution: ${character.stats.con}, Dexterity: ${character.stats.dex}, Intelligence: ${character.stats.int}, Wisdom: ${character.stats.wis}, Charisma: ${character.stats.cha}`;
+        } else {
+            alert("Character data not found! Please create a character first.");
+            window.location.href = "index.html";
+        }
+
+        function startAdventure() {
+            window.location.href = "gameworld.html";
+        }
+    </script>
+</body>
+</html>
