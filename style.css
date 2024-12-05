@@ -75,3 +75,73 @@ main {
     padding: 5px;
     font-size: 1rem;
 }
+
+/* Inventory Modal Styles */
+.modal {
+    display: none; /* Hidden by default */
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background-color: rgba(0, 0, 0, 0.8); /* Semi-transparent background */
+    z-index: 1000; /* Above other elements */
+    justify-content: center;
+    align-items: center;
+}
+
+.modal-content {
+    background: #fff;
+    padding: 20px;
+    border-radius: 8px;
+    text-align: center;
+    max-width: 400px;
+    width: 100%;
+    margin: auto;
+}
+
+.close-button {
+    position: absolute;
+    top: 10px;
+    right: 20px;
+    font-size: 24px;
+    cursor: pointer;
+}
+
+#inventory-list {
+    list-style-type: none;
+    padding: 0;
+    margin: 0;
+}
+
+#inventory-list li {
+    padding: 10px;
+    border: 1px solid #ccc;
+    margin-bottom: 5px;
+    cursor: pointer;
+    background-color: #f9f9f9;
+}
+
+#inventory-list li:hover {
+    background-color: #e6e6e6;
+}
+
+/* Button Image Styling */
+.button {
+    width: 150px; /* Adjust based on your image dimensions */
+    height: auto;
+    cursor: pointer; /* Makes the image clickable */
+    display: inline-block;
+    margin: 10px; /* Optional spacing */
+    transition: transform 0.3s cubic-bezier(0.22, 1, 0.36, 1); /* Smooth bounce in and out */
+}
+
+/* Bounce In on Hover */
+.button:hover {
+    transform: scale(1.1); /* Enlarge slightly on hover */
+}
+
+/* Bounce Out Effect */
+.button:active {
+    transform: scale(0.9); /* Shrinks slightly before returning to normal */
+}

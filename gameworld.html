@@ -23,6 +23,12 @@
                     <option value="insight">Insight</option>
                 </select>
             </div>
+            <!-- Player Health Display -->
+            <div id="health-display">
+                <p id="player-health">Player Health: 100/100</p>
+                <p id="enemy-health">No enemy present.</p>
+            </div>
+            
 
             <!-- Stealth Status -->
             <div id="player-status">
@@ -35,9 +41,24 @@
                 <select id="target-select"></select>
             </div>
 
+            <!-- Inventory Button -->
+            <img id="inventory-button" src="images/inventory-button.png" alt="Inventory Button" onclick="toggleInventory()" class="button">
+
             <!-- Action Buttons -->
             <button id="stealth-button" onclick="goIntoStealth()">Go into Stealth</button>
             <button onclick="performAction()">Perform Action</button>
+
+            <div id="inventory-modal" class="modal">
+                <div class="modal-content">
+                    <span class="close-button" onclick="toggleInventory()">&times;</span>
+                    <h2>Inventory</h2>
+                    <ul id="inventory-list">
+                        <!-- Items will be dynamically added here -->
+                    </ul>
+                </div>
+            </div>            
+            
+
 
         </aside>
 
