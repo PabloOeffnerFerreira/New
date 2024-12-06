@@ -1,3 +1,21 @@
+let currentScene = "crossroads"; // Start in the crossroads scene
+console.log("Current Scene Initialized:", currentScene); // Debugging
+
+// Player Initialization
+let player = {
+    stats: JSON.parse(localStorage.getItem("character"))?.stats || {
+        str: 10, dex: 10, int: 10, wis: 10, cha: 10, con: 10
+    },
+    maxHealth: 100,
+    health: 100
+};
+// Inventory System
+let inventory = [];
+console.log("Inventory Initialized:", inventory); // Debugging
+
+player.maxHealth = 100 + player.stats.con;
+player.health = player.maxHealth;
+console.log("Player Health Initialized:", player.health, "/", player.maxHealth);
 
 // Scene Data
 const scenes = {
@@ -22,83 +40,231 @@ const scenes = {
             { name: "Skeleton Guard", type: "enemy", difficulty: 16, health: 80, maxHealth: 80 },
             { name: "Broken Statue", type: "object", difficulty: 10 }
         ]
+    },
+    village: {
+        description: "Test",
+        targets: [
+            { name: "Skeleton Guard", type: "enemy", difficulty: 16, health: 80, maxHealth: 80 },
+            { name: "Broken Statue", type: "object", difficulty: 10 }
+        ]
     }
 };
 
-// Player State
-let player = {
-    health: 100,
-    maxHealth: 100,
-    stats: JSON.parse(localStorage.getItem("character"))?.stats || {
-        str: 10, dex: 10, int: 10, wis: 10, cha: 10
-    }
-};
-
-let playerState = { isStealthed: false };
-let currentScene = "crossroads";
-
-// Utility: Append Messages
-function appendMessage(message, container) {
-    const msg = document.createElement("p");
-    msg.innerHTML = message;
-    container.appendChild(msg);
-}
-
-// Utility: Find Target in Current Scene
-function findTargetByName(name) {
-    return scenes[currentScene]?.targets.find(t => t.name === name);
-}
-
-// Function: Update Target Dropdown
 function updateTargetDropdown(actionType = "attack") {
-    const targetContainer = document.getElementById("target-container");
     const targetSelect = document.getElementById("target-select");
+    const targetContainer = document.getElementById("target-container");
 
-    // Save the current selection
-    const previousSelection = targetSelect.value;
+    targetSelect.innerHTML = ""; // Clear dropdown
 
-    // Clear existing options
-    targetSelect.innerHTML = "";
-
-    // Get all targets in the current scene
     const targets = scenes[currentScene]?.targets || [];
-    targets.forEach(target => {
+    console.log("Targets in Current Scene:", targets);
+
+    const filteredTargets = targets.filter(target => {
+        if (actionType === "attack") return target.type === "enemy" || target.type === "object";
+        if (actionType === "investigate") return target.type === "object";
+        if (["persuade", "insight"].includes(actionType)) return target.type === "enemy";
+        return false;
+    });
+
+    filteredTargets.forEach(target => {
         const option = document.createElement("option");
         option.value = target.name;
         option.textContent = `${target.type === "enemy" ? "Enemy" : "Object"}: ${target.name}`;
-
-        // Disable options not valid for the current action
-        if (
-            (actionType === "attack" && target.type !== "enemy" && target.type !== "object") ||
-            (actionType === "investigate" && target.type !== "object") ||
-            (["persuade", "insight"].includes(actionType) && target.type !== "enemy")
-        ) {
-            option.disabled = true;
-        }
-
         targetSelect.appendChild(option);
     });
 
-    // Restore previous selection if valid
-    const isSelectionValid = Array.from(targetSelect.options).some(option => option.value === previousSelection);
-    if (isSelectionValid) {
-        targetSelect.value = previousSelection;
-    } else if (targetSelect.options.length > 0) {
-        targetSelect.selectedIndex = 0; // Default to the first option
-    }
-
-    // Adjust visibility and feedback
-    if (targets.length > 0) {
+    if (filteredTargets.length > 0) {
         targetContainer.style.display = "block";
-        targetSelect.size = Math.min(targets.length, 5); // Show up to 5 options
+        targetSelect.size = Math.min(filteredTargets.length, 5);
     } else {
         targetContainer.style.display = "none";
         appendMessage("No valid targets available.", document.getElementById("action-results"));
     }
-
-    console.log("Dropdown updated for action:", actionType, targets);
 }
 
+// Function: Update Health Display
+function updateHealthDisplay() {
+    const playerHealthDisplay = document.getElementById("player-health");
+    const enemyHealthDisplay = document.getElementById("enemy-health");
+
+    // Update player health
+    playerHealthDisplay.innerText = `Player Health: ${player.health}/${player.maxHealth}`;
+
+    const targetSelect = document.getElementById("target-select");
+    const selectedTargetName = targetSelect.options[targetSelect.selectedIndex]?.value;
+    const selectedTarget = scenes[currentScene]?.targets.find(t => t.name === selectedTargetName);
+
+    if (selectedTarget?.type === "enemy") {
+        enemyHealthDisplay.innerText = `${selectedTarget.name} Health: ${selectedTarget.health}/${selectedTarget.maxHealth}`;
+    } else if (selectedTarget?.type === "object") {
+        enemyHealthDisplay.innerText = `Interacting with ${selectedTarget.name}`;
+    } else {
+        enemyHealthDisplay.innerText = "No enemy present.";
+    }
+}
+
+// Debugging logs
+console.log("Player Stats:", player.stats);
+console.log("Constitution:", player.stats.con);
+console.log("Max Health:", player.maxHealth);
+console.log("Scenes Object:", scenes);
+
+if (typeof currentScene !== "undefined") {
+    console.log("Targets in Current Scene:", scenes[currentScene]?.targets);
+}
+
+let playerState = { isStealthed: false };
+
+function goIntoStealth() {
+    const resultsContainer = document.getElementById("action-results");
+
+    if (player.isStealthed) {
+        appendMessage("You are already in stealth mode.", resultsContainer);
+        return;
+    }
+
+    player.isStealthed = true;
+    document.getElementById("stealth-indicator").style.display = "block";
+    appendMessage("You slip into the shadows, becoming harder to detect.", resultsContainer);
+
+    updateStealthButton();
+}
+
+// Function: Append Messages
+function appendMessage(message, container) {
+    const msg = document.createElement("p");
+    msg.innerHTML = message;
+    container.appendChild(msg);
+    console.log(`Message: ${message}`); // Debugging
+}
+
+// Function: Add Item to Inventory
+function addItemToInventory(item) {
+    if (!item || item === "undefined") {
+        console.error("Invalid item detected:", item);
+        return;
+    }
+    inventory.push(item);
+    console.log("Current Inventory:", inventory);
+}
+
+// Function: Render Inventory Items
+function renderInventory() {
+    const inventoryList = document.getElementById("inventory-list");
+    if (!inventoryList) {
+        console.error("Inventory list element not found!");
+        return;
+    }
+
+    inventoryList.innerHTML = ""; // Clear the current display
+
+    if (inventory.length === 0) {
+        const emptyMessage = document.createElement("li");
+        emptyMessage.textContent = "Your inventory is empty.";
+        inventoryList.appendChild(emptyMessage);
+    } else {
+        inventory.forEach(item => {
+            const listItem = document.createElement("li");
+            listItem.textContent = item;
+            inventoryList.appendChild(listItem);
+        });
+    }
+    console.log("Rendered Inventory:", inventory); // Debugging
+}
+
+// Function: Toggle Inventory Modal
+function toggleInventory() {
+    const modal = document.getElementById("inventory-modal");
+
+    if (!modal) {
+        console.error("Inventory modal not found!");
+        return;
+    }
+
+    modal.style.display = modal.style.display === "flex" ? "none" : "flex";
+    if (modal.style.display === "flex") {
+        renderInventory();
+    }
+}
+
+// Loot Tables
+const lootTables = {
+    Goblin: ["Gold Coin", "Dagger", "Health Potion"],
+    Bandit: ["Gold Coin", "Short Sword", "Lockpick"],
+    Chest: ["Ancient Relic", "Gold Coin", "Potion"],
+    Wolf: ["Wolf Pelt", "Claw", "Gold Coin"],
+    "Ancient Tree": ["Ancient Relic", "Potion", "Gold Coin"],
+    "Skeleton Guard": ["Bone Shard", "Rusty Sword", "Gold Coin"],
+    "Broken Statue": ["Ancient Relic", "Gold Coin"]
+};
+
+// Function: Generate Loot with Drop Chance
+function generateLoot(source) {
+    if (!source) {
+        console.error("No source provided for loot generation!");
+        return [];
+    }
+
+    const lootTable = lootTables[source];
+    if (!lootTable) {
+        console.error(`No loot table found for source: ${source}`);
+        return [];
+    }
+
+    return lootTable.filter(() => Math.random() < 0.05); // 5% drop chance
+}
+
+function handleDefeatedEnemy(enemy) {
+    if (!enemy) {
+        console.error("No enemy provided to handleDefeatedEnemy!");
+        return;
+    }
+
+    // Log the defeated enemy for debugging
+    console.log("Enemy Defeated:", enemy);
+    console.log("Current Scene Targets Before Removal:", scenes[currentScene].targets);
+
+    // Append message for enemy defeat
+    appendMessage(`The ${enemy.name} is defeated!`, document.getElementById("action-results"));
+
+    // Generate loot for the defeated enemy
+    const loot = generateLoot(enemy.name); // Pass the enemy's name as the source
+    if (loot.length > 0) {
+        loot.forEach(item => addItemToInventory(item));
+        appendMessage(`You looted: ${loot.join(", ")}.`, document.getElementById("action-results"));
+    } else {
+        appendMessage(`The ${enemy.name} had nothing to loot.`, document.getElementById("action-results"));
+    }
+
+    // Remove the defeated enemy from the scene's targets array
+    scenes[currentScene].targets = scenes[currentScene].targets.filter(t => t !== enemy);
+
+    // Debugging logs after removal
+    console.log("Current Scene Targets After Removal:", scenes[currentScene].targets);
+
+    // Update the target dropdown and health display
+    updateTargetDropdown("attack");
+    updateHealthDisplay();
+}
+
+//More Debugging
+console.log("Current Scene Targets:", scenes[currentScene]?.targets);
+
+
+
+
+// Function: Interact with Object
+function triggerObjectScene(object) {
+    appendMessage(`You interact with the ${object.name}.`, document.getElementById("action-results"));
+
+    const loot = generateLoot(object.name); // Generate loot based on the object name
+    if (loot.length > 0) {
+        loot.forEach(item => addItemToInventory(item));
+        appendMessage(`You found: ${loot.join(", ")}.`, document.getElementById("action-results"));
+    } else {
+        appendMessage(`The ${object.name} was empty.`, document.getElementById("action-results"));
+    }
+}
 
 // Function: Perform Action
 function performAction() {
@@ -111,7 +277,7 @@ function performAction() {
         return;
     }
 
-    const target = findTargetByName(selectedTarget.value);
+    const target = scenes[currentScene]?.targets.find(t => t.name === selectedTarget.value);
     if (!target) {
         appendMessage("Target not found in the current scene.", document.getElementById("action-results"));
         return;
@@ -119,181 +285,46 @@ function performAction() {
 
     if (actionType === "attack") {
         if (target.type === "enemy") {
-            const damage = Math.floor(Math.random() * player.stats.str) + 5; // Calculate damage
+            const damage = Math.floor(Math.random() * player.stats.str) + 5;
             target.health -= damage;
             appendMessage(`You attack the ${target.name} for ${damage} damage!`, document.getElementById("action-results"));
 
             if (target.health <= 0) {
-                appendMessage(`The ${target.name} is defeated!`, document.getElementById("action-results"));
-                scenes[currentScene].targets = scenes[currentScene].targets.filter(t => t !== target); // Remove defeated target
-                updateTargetDropdown(actionType); // Refresh the dropdown
+                handleDefeatedEnemy(target);
             } else {
-                enemyTurn(target); // Enemy retaliates if still alive
+                enemyTurn(target);
             }
         } else if (target.type === "object") {
-            triggerObjectScene(target); // Special logic for objects
+            triggerObjectScene(target);
         }
     } else {
         appendMessage(`You attempt to ${actionType} the ${target.name}.`, document.getElementById("action-results"));
     }
 
-    updateHealthDisplay(); // Update health display after the action
-}
-
-
-function triggerObjectScene(object) {
-    appendMessage(`You interact with the ${object.name}.`, document.getElementById("action-results"));
-
-    if (object.name === "Chest") {
-        appendMessage("You open the chest and find a Potion!", document.getElementById("action-results"));
-        addItemToInventory("Potion");
-    } else if (object.name === "Ancient Tree") {
-        appendMessage("The tree whispers ancient secrets to you and gives you an Ancient Relic!", document.getElementById("action-results"));
-        addItemToInventory("Ancient Relic");
-    } else {
-        appendMessage(`Nothing happens with the ${object.name}.`, document.getElementById("action-results"));
-    }
-}
-
-
-
-
-// Function: Enemy Turn
-function enemyTurn(enemy) {
-    // Calculate enemy damage
-    const damage = Math.floor(Math.random() * 10) + 5; // Example: random damage between 5 and 15
-    player.health -= damage;
-
-    // Log the enemy's attack
-    appendMessage(
-        `The ${enemy.name} attacks you for ${damage} damage!`,
-        document.getElementById("action-results")
-    );
-
-    // Check if the player is dead
-    if (player.health <= 0) {
-        player.health = 0; // Prevent negative health
-        appendMessage("You have been defeated. Game Over!", document.getElementById("action-results"));
-        endGame();
-        return;
-    }
-
-    // Update health display
     updateHealthDisplay();
 }
 
 
-// Function: Update Health Display
-function updateHealthDisplay() {
-    const playerHealthDisplay = document.getElementById("player-health");
-    const enemyHealthDisplay = document.getElementById("enemy-health");
-    const targetSelect = document.getElementById("target-select");
+function handleActionChange() {
+    const actionType = document.getElementById("action-select").value;
+    updateTargetDropdown(actionType);
+}   
 
-    // Update player health
-    playerHealthDisplay.innerText = `Player Health: ${player.health}/${player.maxHealth}`;
 
-    // Ensure there's a selected target
-    const selectedTargetName = targetSelect.options[targetSelect.selectedIndex]?.value;
-    const selectedTarget = scenes[currentScene]?.targets.find(t => t.name === selectedTargetName);
+// Function: Enemy Turn
+function enemyTurn(enemy) {
+    const damage = Math.floor(Math.random() * 10) + 5;
+    player.health -= damage;
 
-    if (selectedTarget && selectedTarget.type === "enemy") {
-        if (selectedTarget.health > 0) {
-            // Update enemy health if still alive
-            enemyHealthDisplay.innerText = `${selectedTarget.name} Health: ${selectedTarget.health}/${selectedTarget.maxHealth}`;
-        } else {
-            // Clear enemy health display when defeated
-            enemyHealthDisplay.innerText = "Enemy defeated!";
-            setTimeout(() => {
-                enemyHealthDisplay.innerText = ""; // Clear after delay
-                updateTargetDropdown("attack"); // Refresh dropdown to remove defeated enemy
-            }, 1000);
-        }
-    } else if (selectedTarget && selectedTarget.type === "object") {
-        // Display interaction for objects
-        enemyHealthDisplay.innerText = `Interacting with ${selectedTarget.name}`;
-    } else {
-        // Fallback for no valid target
-        enemyHealthDisplay.innerText = "No target selected.";
-    }
-}
+    appendMessage(`The ${enemy.name} attacks you for ${damage} damage!`, document.getElementById("action-results"));
 
-// Inventory System
-let inventory = []; // Player's inventory
-
-// Function: Toggle Inventory Modal
-function toggleInventory() {
-    const modal = document.getElementById("inventory-modal");
-    modal.style.display = modal.style.display === "flex" ? "none" : "flex";
-    renderInventory(); // Update the inventory display
-}
-
-// Function: Add Item to Inventory
-function addItemToInventory(item) {
-    inventory.push(item);
-    appendMessage(`You added ${item} to your inventory.`, document.getElementById("action-results"));
-}
-
-// Function: Remove Item from Inventory
-function removeItemFromInventory(item) {
-    const index = inventory.indexOf(item);
-    if (index > -1) {
-        inventory.splice(index, 1);
-        appendMessage(`You removed ${item} from your inventory.`, document.getElementById("action-results"));
-    }
-}
-
-// Function: Render Inventory
-function renderInventory() {
-    const inventoryList = document.getElementById("inventory-list");
-    inventoryList.innerHTML = ""; // Clear existing inventory
-
-    if (inventory.length === 0) {
-        inventoryList.innerHTML = "<li>Your inventory is empty.</li>";
-        return;
+    if (player.health <= 0) {
+        player.health = 0;
+        appendMessage("You have been defeated. Game Over!", document.getElementById("action-results"));
+        endGame();
     }
 
-    inventory.forEach(item => {
-        const listItem = document.createElement("li");
-        listItem.textContent = item;
-        listItem.onclick = () => {
-            appendMessage(`You selected ${item} from your inventory.`, document.getElementById("action-results"));
-        };
-        inventoryList.appendChild(listItem);
-    });
-}
-
-
-function endGame() {
-    const resultsContainer = document.getElementById("action-results");
-    const choicesContainer = document.getElementById("choices");
-
-    appendMessage("Your journey ends here...", resultsContainer);
-
-    // Disable all action buttons and choices
-    document.querySelectorAll("button").forEach(button => (button.disabled = true));
-    choicesContainer.innerHTML = ""; // Clear navigation buttons
-}
-
-// Function: Toggle Stealth
-function toggleStealth() {
-    const resultsContainer = document.getElementById("action-results");
-
-    if (playerState.isStealthed) {
-        playerState.isStealthed = false;
-        appendMessage("You step out of the shadows.", resultsContainer);
-    } else {
-        playerState.isStealthed = true;
-        appendMessage("You slip into the shadows.", resultsContainer);
-    }
-
-    updateStealthButton();
-}
-
-// Function: Update Stealth Button
-function updateStealthButton() {
-    const stealthButton = document.getElementById("stealth-button");
-    stealthButton.textContent = playerState.isStealthed ? "Leave Stealth" : "Go into Stealth";
-    stealthButton.onclick = toggleStealth;
+    updateHealthDisplay();
 }
 
 // Function: Make a Scene Choice
@@ -306,21 +337,64 @@ function makeChoice(destination) {
         return;
     }
 
-    currentScene = destination;
+    currentScene = destination; // Update the current scene
+    console.log("Navigating to:", destination); // Debugging
+
+    // Update UI
     document.getElementById("story-text").innerText = scene.description;
-    resultsContainer.innerHTML = "";
+    resultsContainer.innerHTML = ""; // Clear previous results
     appendMessage(`You move to the ${destination}.`, resultsContainer);
 
-    updateTargetDropdown("attack");
+    updateTargetDropdown("attack"); // Populate dropdown with valid targets
+    updateHealthDisplay(); // Update health display
 }
 
-// Initialize Game World
+
+// Calculate health dynamically
+player.maxHealth = 100 + player.stats.con; // Base health of 100 + Constitution
+player.health = player.maxHealth; // Set current health to max health
+console.log("Player Initialized:", player); // Debugging
+
+function updateStealthButton() {
+    const stealthButton = document.getElementById("stealth-button");
+    stealthButton.textContent = player.isStealthed ? "Leave Stealth" : "Go into Stealth";
+    stealthButton.onclick = player.isStealthed ? leaveStealth : goIntoStealth;
+}
+
+function leaveStealth() {
+    const resultsContainer = document.getElementById("action-results");
+
+    if (!player.isStealthed) {
+        appendMessage("You are not in stealth mode.", resultsContainer);
+        return;
+    }
+
+    player.isStealthed = false;
+    document.getElementById("stealth-indicator").style.display = "none";
+    appendMessage("You step out of the shadows, revealing yourself.", resultsContainer);
+
+    updateStealthButton();
+}
+// Calculate Player Health
+player.maxHealth = 100 + player.stats.con; // Constitution modifier added
+player.health = player.maxHealth; // Set current health to max health
+
+console.log(`Player Health Initialized: ${player.health}/${player.maxHealth}`);
+
+// Update health display during game initialization
 function initializeGameWorld() {
+    console.log("Initializing Game World...");
+
+    // Recalculate health immediately
+    player.maxHealth = 100 + player.stats.con;
+    player.health = player.maxHealth;
+
     appendMessage("Welcome to the crossroads. Your adventure begins!", document.getElementById("action-results"));
+
     makeChoice("crossroads");
     updateTargetDropdown("attack");
+    updateHealthDisplay(); // Refresh health UI immediately
     updateStealthButton();
-    updateHealthDisplay();
 }
 
 initializeGameWorld();

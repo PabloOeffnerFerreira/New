@@ -1,12 +1,13 @@
-
 <!DOCTYPE html>
 <html lang="en">
+
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Game World</title>
     <link rel="stylesheet" href="style.css">
 </head>
+
 <body>
     <div id="gameworld-container">
         <!-- Sidebar for Actions -->
@@ -28,7 +29,7 @@
                 <p id="player-health">Player Health: 100/100</p>
                 <p id="enemy-health">No enemy present.</p>
             </div>
-            
+
 
             <!-- Stealth Status -->
             <div id="player-status">
@@ -42,7 +43,8 @@
             </div>
 
             <!-- Inventory Button -->
-            <img id="inventory-button" src="images/inventory-button.png" alt="Inventory Button" onclick="toggleInventory()" class="button">
+            <img id="inventory-button" src="images/inventory-button.png" alt="Inventory Button"
+                onclick="toggleInventory()" class="button">
 
             <!-- Action Buttons -->
             <button id="stealth-button" onclick="goIntoStealth()">Go into Stealth</button>
@@ -53,19 +55,18 @@
                     <span class="close-button" onclick="toggleInventory()">&times;</span>
                     <h2>Inventory</h2>
                     <ul id="inventory-list">
-                        <!-- Items will be dynamically added here -->
+                        <!-- Inventory items will be dynamically added here -->
                     </ul>
                 </div>
             </div>            
-            
-
 
         </aside>
 
         <!-- Main Gameplay Area -->
         <main id="gameplay-area">
             <div id="story-text">
-                <p>You find yourself at a crossroads. A dense forest lies to the north, while a crumbling castle looms to the east. Where will you go?</p>
+                <p>You find yourself at a crossroads. A dense forest lies to the north, while a crumbling castle looms
+                    to the east. Where will you go?</p>
             </div>
 
             <div id="action-results"></div>
@@ -73,11 +74,13 @@
             <div id="choices">
                 <button onclick="makeChoice('forest')">Go to the Forest</button>
                 <button onclick="makeChoice('castle')">Go to the Castle</button>
-                <button onclick="makeChoice('village')">Head to the Village</button>
+                <button onclick="makeChoice('crossroads')">Go back to the Crossroads</button>
             </div>
+            
         </main>
     </div>
 
     <script src="gameworld.js"></script>
 </body>
+
 </html>
